@@ -196,5 +196,16 @@ class Category
     public function setSlugValue()
     {
         // Add your code here
+        $this->slug = Jobeet::slugify($this->getName());
+    }
+
+    /**
+     * Get slug
+     *
+     * @return string 
+     */
+    public function getSlug()
+    {
+        return $this->slug;
     }
 }
