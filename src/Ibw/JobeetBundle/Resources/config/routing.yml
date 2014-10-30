@@ -1,11 +1,39 @@
 ibw_jobeet_homepage:
-    pattern:  /
+    pattern:  /{_locale}/
     defaults: { _controller: IbwJobeetBundle:Job:index }
+
+IbwJobeetBundle_nonlocalized:
+       pattern:  /
+       defaults: { _controller: "IbwJobeetBundle:Job:index" }
 
 IbwJobeetBundle_job:
         resource: "@IbwJobeetBundle/Resources/config/routing/job.yml"
-        prefix:   /job
+        prefix:   /{_locale}/job
+
+IbwJobeetBundle_affiliate:
+        resource: "@IbwJobeetBundle/Resources/config/routing/affiliate.yml"
+        prefix:   /{_locale}/affiliate
 
 IbwJobeetBundle_category:
-    pattern:  /category/{slug}/{page}
+    pattern:  /{_locale}/category/{slug}/{page}
     defaults: { _controller: IbwJobeetBundle:Category:show, page: 1 }
+
+login:
+    pattern:   /login
+    defaults:  { _controller: IbwJobeetBundle:Default:login }
+
+login_check:
+    pattern:   /login_check
+
+logout:
+    pattern:   /logout
+
+IbwJobeetBundle_api:
+    pattern: /api/{token}/jobs.{_format}
+    defaults: {_controller: "IbwJobeetBundle:Api:list"}
+    requirements:
+        _format: xml|json|yml
+
+IbwJobeetBundle_changeLanguage:
+    pattern: /change_language
+    defaults: { _controller: "IbwJobeetBundle:Default:changeLanguage" }

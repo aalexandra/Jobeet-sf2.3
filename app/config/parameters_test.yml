@@ -1,0 +1,5 @@
+parameters:
+    mailer_transport: gmail
+    mailer_host: 127.0.0.1
+    mailer_user: testmailer098@gmail.com
+    mailer_password: mailer098

@@ -97,7 +97,7 @@
             <div>
                 <div class="category">
                     <div class="feed">
-                        <a href="">Feed</a>
+                        <a href="{{ path('IbwJobeetBundle_category', { 'slug': category.slug, '_format': 'atom' }) }}">Feed</a>
                     </div>
                     <h1><a href="{{ path('IbwJobeetBundle_category', { 'slug': category.slug }) }}">{{ category.name }}</a></h1>
                 </div>
@@ -105,8 +105,7 @@
 
                 {% if category.morejobs %}
                     <div class="more_jobs">
-                        and <a href="{{ path('IbwJobeetBundle_category', { 'slug': category.slug }) }}">{{ category.morejobs }}</a>
-                        more...
+                        {% trans with {'%count%': '<a href="' ~ path('IbwJobeetBundle_category', { 'slug': category.slug }) ~ '">' ~  category.morejobs ~ '</a>'} %}and %count% more...{% endtrans %}
                     </div>
                 {% endif %}
             </div>

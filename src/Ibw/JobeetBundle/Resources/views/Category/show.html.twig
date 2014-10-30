@@ -11,10 +11,11 @@
  
 {% block content %}
     <div class="category">
-        <div class="feed">
-            <a href="">Feed
-            </a>
-        </div>
+
+            <div class="feed">
+                <a href="{{ path('IbwJobeetBundle_category', { 'slug': category.slug, '_format': 'atom' }) }}">Feed</a>
+            </div>
+
         <h1>{{ category.name }}</h1>
     </div>
 

@@ -45,3 +45,6 @@ ibw_job_extend:
     pattern:  /{token}/extend
     defaults: { _controller: "IbwJobeetBundle:Job:extend" }
     requirements: { _method: post }
+ibw_job_search:
+    pattern: /search
+    defaults: { _controller: "IbwJobeetBundle:Job:search" }

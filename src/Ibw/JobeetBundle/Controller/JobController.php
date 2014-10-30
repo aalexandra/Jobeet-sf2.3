@@ -7,6 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
 use Ibw\JobeetBundle\Entity\Job;
 use Ibw\JobeetBundle\Form\JobType;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Job controller.
@@ -19,8 +20,14 @@ class JobController extends Controller
      * Lists all Job entities.
      *-
      */
-    public function indexAction()
+    public function indexAction(Request $request)
     {
+        $em = $this->getDoctrine()->getManager();
+
+        if($request->get('_route') == 'IbwJobeetBundle_nonlocalized') {
+            return $this->redirect($this->generateUrl('ibw_jobeet_homepage'));
+        }
+
         $em = $this->getDoctrine()->getManager();
 
 //        $entities = $em->getRepository('IbwJobeetBundle:Job')->getActiveJobs();
@@ -42,8 +49,22 @@ class JobController extends Controller
                                                                                     ->getParameter('max_jobs_on_homepage'));
         }
 
-        return $this->render('IbwJobeetBundle:Job:index.html.twig', array(
-            'categories' => $categories
+        $latestJob = $em->getRepository('IbwJobeetBundle:Job')->getLatestPost();
+
+        if($latestJob) {
+            $lastUpdated = $latestJob->getCreatedAt()->format(DATE_ATOM);
+        } else {
+            $lastUpdated = new \DateTime();
+            $lastUpdated = $lastUpdated->format(DATE_ATOM);
+        }
+
+
+        $format = $request->getRequestFormat();
+
+        return $this->render('IbwJobeetBundle:Job:index.'.$format.'.twig', array(
+            'categories' => $categories,
+            'lastUpdated' => $lastUpdated,
+            'feedId' => sha1($this->get('router')->generate('ibw_job', array('_format'=> 'atom'), true)),
         ));
 
     }
@@ -148,6 +169,31 @@ class JobController extends Controller
         if (!$entity) {
             throw $this->createNotFoundException('Unable to find Job entity.');
         }
+
+
+        $session = $this->getRequest()->getSession();
+
+        // fetch jobs already stored in the job history
+        $jobs = $session->get('job_history', array());
+
+        // store the job as an array so we can put it in the session and avoid entity serialize errors
+        $job = array('id' => $entity->getId(),
+                     'position' =>$entity->getPosition(),
+                     'company' => $entity->getCompany(),
+                     'companyslug' => $entity->getCompanySlug(),
+                     'locationslug' => $entity->getLocationSlug(),
+                     'positionslug' => $entity->getPositionSlug());
+
+        if (!in_array($job, $jobs)) {
+            // add the current job at the beginning of the array
+            array_unshift($jobs, $job);
+
+            // store the new job history back into the session
+            $session->set('job_history', array_slice($jobs, 0, 3));
+        }
+
+
+
 
         $deleteForm = $this->createDeleteForm($id);
 
@@ -378,6 +424,35 @@ class JobController extends Controller
         return $this->createFormBuilder(array('token' => $token))
             ->add('token', 'hidden')
             ->getForm();
+    }
+
+    public function searchAction(Request $request){
+
+        $em = $this->getDoctrine()->getManager();
+
+        $query = $request->get('query');
+
+        if(!$query) {
+            if(!$request->isXmlHttpRequest()) {
+                return $this->redirect($this->generateUrl('ibw_job'));
+            } else {
+                return new Response('No results.');
+            }
+        }
+
+        $jobs = $em->getRepository('IbwJobeetBundle:Job')->getForLuceneQuery($query);
+
+        if($request->isXmlHttpRequest()) {
+
+            if('*' == $query || !$jobs || $query == '') {
+                return new Response('No results.');
+            }
+
+            return $this->render('IbwJobeetBundle:Job:list.html.twig', array('jobs' => $jobs));
+        }
+
+        return $this->render('IbwJobeetBundle:Job:search.html.twig', array('jobs' => $jobs));
+
     }
 
 
